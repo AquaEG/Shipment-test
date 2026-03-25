@@ -72,16 +72,17 @@ export const normalizeShipmentResponse = (
   const history = getArray(source, ['shipment_history', 'history', 'timeline', 'events'])
     .map(normalizeHistoryEvent)
     .filter((event): event is ShipmentHistoryEvent => Boolean(event));
+  const latestHistoryEvent = history[history.length - 1];
 
   const rawShipmentStatus =
-    getString(source, ['shipment_status', 'status', 'current_status']) || history.at(-1)?.status;
+    getString(source, ['shipment_status', 'status', 'current_status']) || latestHistoryEvent?.status;
 
   const currentLocation =
     getString(source, ['current_location', 'location', 'latest_location']) ||
-    history.at(-1)?.location;
+    latestHistoryEvent?.location;
 
   const lastUpdate =
-    getString(source, ['last_update', 'updated_at', 'latest_update']) || history.at(-1)?.date;
+    getString(source, ['last_update', 'updated_at', 'latest_update']) || latestHistoryEvent?.date;
 
   const trackingNumber =
     getString(source, ['tracking_number', 'trackingNumber', 'awb', 'reference']) ||

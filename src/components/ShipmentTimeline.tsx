@@ -8,7 +8,8 @@ type ShipmentTimelineProps = {
 const TRACKING_STEPS = ['Shipment Created', 'Picked Up', 'In Transit', 'Out For Delivery', 'Delivered'];
 
 const getStepIndex = (events: ShipmentHistoryEvent[]) => {
-  const latest = events.at(-1)?.status.toLowerCase() ?? '';
+  const latestEvent = events[events.length - 1];
+  const latest = latestEvent?.status.toLowerCase() ?? '';
 
   const index = TRACKING_STEPS.findIndex((step) => latest.includes(step.toLowerCase()));
   return index === -1 ? 2 : index;

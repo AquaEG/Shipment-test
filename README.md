@@ -1,54 +1,15 @@
-# Market Minds AI Shipment Tracking System
+# AI Assistant Dashboard
 
-A production-ready shipment tracking web app built with React, Vite, TypeScript, and Tailwind CSS. It is designed for the Market Minds AI brand, sends tracking numbers to a configurable webhook through environment variables, normalizes flexible response data, and renders a polished SaaS-style dashboard.
+A production-ready React + TypeScript + Tailwind dashboard for an AI assistant that manages email, calendar, and sheets through a chat interface. The assistant sends messages to an n8n webhook through a centralized service layer and reads the endpoint from an environment variable only.
 
 ## Features
 
-- Responsive shipment tracking experience with a modern dashboard UI
-- Configurable webhook integration for n8n or any backend automation flow
-- Mock mode for local testing before connecting a real endpoint
-- Safe response normalization for flexible webhook payloads
-- Loading, error, success, idle, and no-results states
-- Shipment history timeline with progress steps
-- Copy tracking number and refresh actions
-
-## Project Structure
-
-```text
-.
-├── .env.example
-├── index.html
-├── package.json
-├── postcss.config.js
-├── README.md
-├── tailwind.config.ts
-├── tsconfig.app.json
-├── tsconfig.json
-├── tsconfig.node.json
-├── vite.config.ts
-└── src
-    ├── App.tsx
-    ├── components
-    │   ├── EmptyState.tsx
-    │   ├── ErrorMessage.tsx
-    │   ├── LoadingState.tsx
-    │   ├── ShipmentTimeline.tsx
-    │   ├── StatusBadge.tsx
-    │   ├── TrackingForm.tsx
-    │   └── TrackingResultCard.tsx
-    ├── config
-    │   └── tracking.ts
-    ├── index.css
-    ├── lib
-    │   ├── mockShipment.ts
-    │   ├── normalizeShipment.ts
-    │   └── utils.ts
-    ├── main.tsx
-    ├── services
-    │   └── trackingService.ts
-    └── types
-        └── shipment.ts
-```
+- Routed dashboard with `Dashboard`, `AI Assistant`, `Email`, `Calendar`, `Sheets`, `Activity Log`, and `Settings / Integrations`
+- Centralized webhook helper with timeout, retry, and error handling
+- Flexible response parsing for different n8n payload shapes
+- Responsive dark SaaS UI with glass panels and glow accents
+- Mock content for a demo-ready product surface
+- Clear UI state when the webhook env variable is missing
 
 ## Setup
 
@@ -64,85 +25,61 @@ npm install
 cp .env.example .env
 ```
 
-3. Start the development server:
+3. Add your n8n webhook URL:
+
+```env
+VITE_N8N_WEBHOOK_URL=https://your-domain.com/webhook/your-endpoint
+```
+
+4. Start the development server:
 
 ```bash
 npm run dev
 ```
 
-## Webhook Environment Setup
+## Production Preview
 
-The webhook is environment-based already. It is not hardcoded inside the React components.
-
-Set the webhook URL in your `.env` file:
-
-```env
-VITE_TRACKING_USE_MOCK=false
-VITE_TRACKING_WEBHOOK_URL=https://your-domain.com/webhook/shipment-tracking
+```bash
+npm run build
+npm run preview
 ```
 
-The integration settings are read from:
+## Webhook Contract
 
-- `src/config/tracking.ts`
-
-That file reads:
-
-- `VITE_TRACKING_USE_MOCK`
-- `VITE_TRACKING_WEBHOOK_URL`
-
-This lets you deploy different webhook endpoints for local, staging, and production environments without editing the UI code.
-
-## Request Payload
-
-The frontend sends this POST body to your webhook:
+The AI Assistant page sends a POST request through `src/services/assistantApi.ts`. The request body is modular and includes:
 
 ```json
 {
-  "tracking_number": "TRK123456789"
+  "message": "Review urgent inbox items",
+  "conversationId": "agent-ops-demo",
+  "channel": "assistant-dashboard",
+  "context": {
+    "integrations": ["email", "calendar", "sheets"],
+    "currentPage": "assistant",
+    "workspace": "executive-ops"
+  },
+  "metadata": {
+    "sentAt": "ISO-8601",
+    "timezone": "local timezone",
+    "locale": "browser locale"
+  }
 }
 ```
 
-## Expected Response
+## Environment Rules
 
-The app is built to accept flexible response shapes. It works best with fields like:
+- The webhook URL is read only from `VITE_N8N_WEBHOOK_URL`
+- If the variable is missing, the app shows a friendly `Webhook endpoint is not configured` state
+- Future auth headers can be added in the service layer without touching the chat UI
 
-- `tracking_number`
-- `shipment_status`
-- `current_location`
-- `last_update`
-- `estimated_delivery`
-- `carrier_name`
-- `recipient_name`
-- `shipment_history`
+## Project Files
 
-It also attempts to normalize alternative keys such as `status`, `carrier`, `history`, `timeline`, `events`, and nested objects under `data`, `result`, or `shipment`.
-
-## Mock Mode
-
-Mock mode is enabled by default through `.env.example`:
-
-```env
-VITE_TRACKING_USE_MOCK=true
-```
-
-This lets you test the UI without a live backend. When you are ready to connect n8n, switch it to `false` and add your webhook URL.
-
-## Notes For Integration
-
-- `src/services/trackingService.ts` contains the webhook request logic.
-- `src/lib/normalizeShipment.ts` contains the response normalization logic.
-- `src/lib/mockShipment.ts` contains the fallback mock shipment payload.
-- If your webhook returns a slightly different schema later, update the normalization keys instead of rewriting UI components.
+- `src/config/env.ts` for environment access and webhook state
+- `src/services/assistantApi.ts` for the centralized fetch logic
+- `src/pages/` for the dashboard pages
+- `src/mock/data.ts` for realistic mock content
+- `PROJECT_OVERVIEW.md` for a short GitHub-facing summary
 
 ## Deployment
 
-This app is compatible with standard Vite deployments, including:
-
-- Vercel static hosting
-- Netlify
-- Cloudflare Pages
-- Any static file hosting after `npm run build`
-
-## Important
-
-This workspace did not include Node.js or npm, so the project files were created but dependency installation and local build verification could not be run in this environment.
+This project is ready for static hosting after `npm run build`. It can be deployed to any Vite-compatible platform or uploaded directly to GitHub as source for later CI/CD setup.
